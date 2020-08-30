@@ -660,15 +660,29 @@ public void SetFailStateCustom(const char[] fmt, any ...)
 	SetFailState(buff);
 }
 
+// 0-2 are axial planes
+#define	PLANE_X			0
+#define	PLANE_Y			1
+#define	PLANE_Z			2
+
+// 3-5 are non-axial planes snapped to the nearest
+#define	PLANE_ANYX		3
+#define	PLANE_ANYY		4
+#define	PLANE_ANYZ		5
+
 stock bool IsValidMovementTrace(CGameMovement pThis, CGameTrace tr)
 {
 	if(tr.allsolid || tr.startsolid)
 		return false;
 	
-	if(CloseEnoughFloat(tr.fraction, 0.0))
-		return false;
-	
+	// This fixes pixelsurfs in a kind of scuffed way
 	Vector plane_normal = tr.plane.normal;
+	if(CloseEnoughFloat(tr.fraction, 0.0)
+		&& tr.plane.type >= PLANE_Z) // axially aligned vertical planes (not floors) can be pixelsurfs!
+	{
+		return false;
+	}
+	
 	if(FloatAbs(plane_normal.x) > 1.0 || FloatAbs(plane_normal.y) > 1.0 || FloatAbs(plane_normal.z) > 1.0)
 		return false;
 	
